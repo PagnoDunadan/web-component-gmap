@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Google map test</title>
+</head>
+
+<body>
+  <div style="margin-left:50px; float:left;">
+    <h1>Normal google map</h1>
+    <div id="map" style="height:400px; width:400px;"></div>
+
+    <script>
+      function initMap() {
+        var defaultCoordinates = { lat: 47.17465989999999, lng: 9.469142499999975 };
+        var map = new google.maps.Map(document.getElementById('map'), { zoom: 15, center: defaultCoordinates });
+        var marker = new google.maps.Marker({ position: defaultCoordinates, map: map, draggable: true });
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY_HERE}}&callback=initMap"></script>
+  </div>
+
+  <web-component-map></web-component-map>
+  <script>
+    const googleScriptLoaded = !!document.querySelector('script[src="https://maps.googleapis.com/maps/api/js?key={{API_KEY_HERE}}&callback=initMap"]');
+    document.querySelector('web-component-map').googleScriptLoaded = googleScriptLoaded;
+  </script>
+
+  <script>
+    class WebComponentMap extends HTMLElement {
+      constructor() {
+        super();
+        this.shadow = this.attachShadow({ mode: 'open' });
+        this.shadow.innerHTML = `
+        <div style="margin-left:50px; float:left;">
+          <h1>Web component google map</h1>
+          <div id="map" style="height:400px; width:400px;"></div>
+        </div>
+        `;
+      }
+      connectedCallback() {
+        if (!this.googleScriptLoaded) {
+          const script = document.createElement('script');
+          script.src = 'https://maps.googleapis.com/maps/api/js?key={{API_KEY_HERE}}';
+          script.onload = this.googleMapLoaded.bind(this);
+          this.shadow.appendChild(script);
+        } else {
+          this.googleMapLoaded();
+        }
+      }
+      googleMapLoaded() {
+        const defaultCoordinates = { lat: 47.17465989999999, lng: 9.469142499999975 };
+        const map = new google.maps.Map(this.shadow.querySelector('#map'), { zoom: 15, center: defaultCoordinates });
+        const marker = new google.maps.Marker({ position: defaultCoordinates, map: map, draggable: true });
+      }
+    }
+
+    customElements.define('web-component-map', WebComponentMap);
+  </script>
+</body>
+
+</html>
